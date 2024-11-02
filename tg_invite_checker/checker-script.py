@@ -14,8 +14,6 @@ def get_channel_info(url: str):
         channel_description = og_description['content'] if og_description else "Channel description not found"
         subscriber_div = soup.find("div", class_="tgme_page_extra")
         subscriber_count = subscriber_div.get_text(strip=True) if subscriber_div else "Subscriber count not found"
-        if channel_name == "Join group chat on Telegram":
-            return f"Invite likely expired"
         return channel_name, subscriber_count, channel_description, url
     else:
         print(f'Failed to retrieve the website. Status code: {response.status_code}')
@@ -25,20 +23,26 @@ def get_channel_info(url: str):
 def read_file(filename: str):
     expired_counter = 0
     alive_counter = 0
+    seen = set()
+    duplicate_counter = 0
     with open(filename, 'r') as file:
         for line in file:
             link = line.strip().rstrip(')."')
-            result = get_channel_info(link)
-            if result == "Invite likely expired":
+            channel_name, subscriber_count, channel_description, url = get_channel_info(link)
+            if channel_name == "Join group chat on Telegram": # invite likely expired
                 expired_counter = expired_counter + 1
-            elif result == None:
-                print("oopsies")
+            elif ((channel_name, channel_description)) in seen:
+                duplicate_counter = duplicate_counter + 1
+                alive_counter = alive_counter + 1
             else:
+                result = channel_name, subscriber_count, channel_description, url
                 print(result)
-                alive_counter = alive_counter + 1                
+                alive_counter = alive_counter + 1   
+                seen.add((channel_name, channel_description))             
     print(f'Total links: {expired_counter+alive_counter}\n'
         f'Expired links: {expired_counter}\n' 
-        f'Live links: {alive_counter}')
+        f'Live links: {alive_counter}\n'
+        f'Duplicate channels: {duplicate_counter}')
 
 def main():
     parser = argparse.ArgumentParser(description="Check Telegram invite links")
@@ -69,3 +73,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

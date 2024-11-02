@@ -1,6 +1,6 @@
 # Telegram Invite Checker
 
-Check Telegram channel invite links to see if they're alive, and return channel title, description, and number of subscribers. 
+Check Telegram channel invite links to see if they're alive, and return channel title, description, and number of subscribers. Removes duplicate channels by default (if the channel title and description are the same as another channel, it isn't included in the final results set).
 
 ## Requirements
 
